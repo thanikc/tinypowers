@@ -1,0 +1,9 @@
+{
+  "name": "tinypowers",
+  "description": "A development workflow: DDD modelling, BDD scenarios as tests, smallest complete change, verified before done.",
+  "version": "0.1.0",
+  "hooks": [
+    "./hooks/tinypowers-hooks.json",
+    "./hooks/claude-band.json"
+  ]
+}

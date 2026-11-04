@@ -1,0 +1,11 @@
+{
+  "name": "tinypowers-marketplace",
+  "owner": { "name": "tch" },
+  "plugins": [
+    {
+      "name": "tinypowers",
+      "source": "./",
+      "description": "Minimal DDD + BDD development workflow skill."
+    }
+  ]
+}
