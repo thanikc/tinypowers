@@ -46,7 +46,7 @@ For multi-step work, write a short plan to `docs/plans/<feature>.md`: each step 
 
 ### Orchestration
 
-Whenever you are about to execute tasks, with or without a spec or plan, check whether they fit: several separable items (e.g. 3+ fixes), independent steps, or steps of clearly different difficulty. If so, read `orchestration.md` (next to this file) and ask its two options (via AskUserQuestion) before the first edit: in the same turn as the plan review if you write a plan, otherwise right away. Always ask; no other approval (plan, spec, "ok") counts as choosing. If the tasks don't fit, do it inline.
+Before implementing, with or without a plan, check whether the work has several separable items (e.g. 3+ fixes), independent steps, or steps of clearly different difficulty. If so, read `orchestration.md` (next to this file) and follow it. Otherwise do it inline.
 
 ### Red, green, refactor, per scenario
 
@@ -67,6 +67,8 @@ Whenever you are about to execute tasks, with or without a spec or plan, check w
 ## 7. Verify before claiming done
 
 Run the tests and any build or type check. Read the output. Report real results; if something failed or was not run, say so. No "should work".
+
+If the repo has evals (an `evals/` dir or similar), or the change touches prompts, skills or agent behaviour, ask the user whether to run them too. Don't run them unasked: they cost tokens and time.
 
 ## 8. Reply
 
