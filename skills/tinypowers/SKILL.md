@@ -68,6 +68,8 @@ Before implementing, with or without a plan, check whether the work has several 
 
 Run the tests and any build or type check. Read the output. Report real results; if something failed or was not run, say so. No "should work".
 
+If the repo has evals (an `evals/` dir or similar), or the change touches prompts, skills or agent behaviour, ask the user whether to run them too. Don't run them unasked: they cost tokens and time.
+
 ## 8. Reply
 
 End with one or two lines: what you skipped or didn't check, and any risk the user must know.

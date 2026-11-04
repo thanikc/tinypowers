@@ -25,7 +25,7 @@ const TASKS = [
   ['Fix', 'fix a bug: ask me for the symptom, reproduce it with a failing scenario first'],
   ['Review', 'review the uncommitted changes against the workflow, change nothing'],
   ['Audit', 'audit the whole codebase against the workflow (domain model, scenarios, needless code), report findings ranked, change nothing'],
-  ['Verify', 'run the tests and any build or type check, report real results'],
+  ['Verify', 'run the tests and any build or type check, report real results. If the repo has evals or the change touches prompts or skills, use AskUserQuestion to ask whether to run them too'],
 ] as const
 
 export const register: Register = (on, _options) => {
