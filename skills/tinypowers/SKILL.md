@@ -1,6 +1,6 @@
 ---
 name: tinypowers
-description: Use when building a feature or fixing a bug and you want a disciplined, minimal workflow - domain modelling (DDD), Gherkin scenarios as tests (BDD), smallest complete change, verified before claiming done. Triggers on "build", "add feature", "implement", "fix", or /tinypowers. Also use when continuing or planning work from an existing spec or plan (docs/specs/, docs/plans/), e.g. "continue with phase 3", "next step", "implement the spec".
+description: Use when building a feature or fixing a bug and you want a disciplined, minimal workflow - domain modelling (DDD), Gherkin scenarios as tests (BDD), smallest complete change, verified before claiming done. Triggers on "build", "add feature", "implement", "fix", "execute the plan", "run the plan", or /tinypowers. Also use when continuing or planning work from an existing spec or plan (docs/specs/, docs/plans/), e.g. "continue with phase 3", "next step", "implement the spec".
 ---
 
 # Spec-first-dev
@@ -46,7 +46,7 @@ For multi-step work, write a short plan to `docs/plans/<feature>.md`: each step 
 
 ### Orchestration
 
-Before implementing, with or without a plan, check whether the work has several separable items (e.g. 3+ fixes), independent steps, or steps of clearly different difficulty. If so, read `orchestration.md` (next to this file) and follow it. Otherwise do it inline.
+Before the first edit, with or without a plan: if the work has 2+ plan steps, or several separable items (e.g. 3+ fixes), independent steps, or steps of clearly different difficulty, you must read `orchestration.md` (next to this file) and ask with AskUserQuestion as it says. "Execute the plan" is not a choice. Otherwise do it inline.
 
 ### Red, green, refactor, per scenario
 
