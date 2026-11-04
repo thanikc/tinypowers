@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ \"$(cat \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/.tinypowers-active\" 2>/dev/null)\" = off ] && echo 'TINYPOWERS OFF: do not use the tinypowers skill or its workflow until the user turns it on again.'; exit 0"
+            "command": "[ \"$(cat \"${CLAUDE_PROJECT_DIR:-.}/.claude/.tinypowers-active\" 2>/dev/null)\" = off ] && echo 'TINYPOWERS OFF: do not use the tinypowers skill or its workflow until the user turns it on again.'; exit 0"
           }
         ]
       }

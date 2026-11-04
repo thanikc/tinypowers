@@ -4,7 +4,7 @@ import type { EngineInterface, Register } from 'claude-code'
 import { NO_TOKENS, addTokens, elapsed, fmtTokens, totalTokens } from './metrics'
 import type { Tokens } from './metrics'
 
-type Band = { cost: number; spent: number; turns: number; turnCosts: number[]; tokens: Tokens; busyMs: number; open: string[]; since?: number; on: boolean }
+type Band = { cost: number; spent: number; turns: number; turnCosts: number[]; tokens: Tokens; busyMs: number; open: string[]; since?: number; on: boolean; cwd?: string }
 const EMPTY: Band = { cost: 0, spent: 0, turns: 0, turnCosts: [], tokens: NO_TOKENS, busyMs: 0, open: [], on: true }
 const TASK = { spent: 0, turns: 0, turnCosts: [], tokens: NO_TOKENS, busyMs: 0, open: [], since: undefined }
 const band = atom({ plugin: 'tinypowers', key: 'band' } as const, EMPTY)
@@ -12,8 +12,9 @@ const load = async ($: EngineInterface): Promise<Band> => ({ ...EMPTY, ...(await
 
 // Windows sets USERPROFILE, not HOME.
 const home = async ($: EngineInterface) => (await $.env.get('HOME')) ?? (await $.env.get('USERPROFILE'))
-// The flag hooks/tinypowers-hooks.json reads. Absent = on.
-const flagFile = async ($: EngineInterface) => `${(await $.env.get('CLAUDE_CONFIG_DIR')) ?? `${await home($)}/.claude`}/.tinypowers-active`
+// The flag hooks/tinypowers-hooks.json reads, one per project. Absent = on.
+// shortcut: before session.start has run there is no project yet, so it falls back to the home folder.
+const flagFile = async ($: EngineInterface) => `${(await load($)).cwd ?? (await home($))}/.claude/.tinypowers-active`
 const isOn = async ($: EngineInterface) => (await $.fs.read(await flagFile($)).catch(() => 'on')).trim() !== 'off'
 
 // Same command a person types, so the skill stays the only logic.
@@ -29,6 +30,11 @@ const TASKS = [
 ] as const
 
 export const register: Register = (on, _options) => {
+  on('session.start', async ($, e, next) => {
+    await update($, band, b => ({ ...EMPTY, ...b, cwd: e.cwd }))
+    return next(e)
+  }).catch(($, e, next) => next(e))
+
   // /clear starts a new task: counters start over, the cost baseline stays.
   on('session.end', async ($, e, next) => {
     if (e.reason === 'clear') await update($, band, b => ({ ...EMPTY, ...b, ...TASK }))
@@ -113,7 +119,7 @@ export const register: Register = (on, _options) => {
         <Text dimColor>{b.turns} {b.turns === 1 ? 'turn' : 'turns'}</Text>
         <Text dimColor>{elapsed(b.busyMs + (b.since === undefined ? 0 : now - b.since))}</Text>
         <Box flexGrow={1} />
-        {TASKS.map(([label, args]) => (
+        {enabled && TASKS.map(([label, args]) => (
           <Button key={label} plain label={label} onPress={() => run($, args)} />
         ))}
       </Box>

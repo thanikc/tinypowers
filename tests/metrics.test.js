@@ -6,15 +6,16 @@ const path = require('node:path')
 // The hook that makes "off" real: silent when on or flag absent, says OFF when the flag is off.
 const hooks = require('../hooks/tinypowers-hooks.json')
 const cmd = hooks.hooks.UserPromptSubmit[0].hooks[0].command
-const run = dir => execFileSync('sh', ['-c', cmd], { env: { ...process.env, CLAUDE_CONFIG_DIR: dir } }).toString()
+const run = dir => execFileSync('sh', ['-c', cmd], { env: { ...process.env, CLAUDE_PROJECT_DIR: dir } }).toString()
 
 test('hook is silent without a flag and when on, speaks when off', () => {
   const fs = require('node:fs')
   const dir = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'syn-'))
+  fs.mkdirSync(path.join(dir, '.claude'))
   assert.equal(run(dir), '')
-  fs.writeFileSync(path.join(dir, '.tinypowers-active'), 'on')
+  fs.writeFileSync(path.join(dir, '.claude', '.tinypowers-active'), 'on')
   assert.equal(run(dir), '')
-  fs.writeFileSync(path.join(dir, '.tinypowers-active'), 'off')
+  fs.writeFileSync(path.join(dir, '.claude', '.tinypowers-active'), 'off')
   assert.match(run(dir), /TINYPOWERS OFF/)
 })
 
