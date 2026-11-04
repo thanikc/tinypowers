@@ -46,7 +46,7 @@ For multi-step work, write a short plan to `docs/plans/<feature>.md`: each step 
 
 ### Orchestration
 
-Whenever you are about to execute tasks, with or without a spec or plan, check whether they fit: several separable items (e.g. 3+ fixes), independent steps, or steps of clearly different difficulty. If so, read `orchestration.md` (next to this file) and ask its two options (via AskUserQuestion) before the first edit: in the same turn as the plan review if you write a plan, otherwise right away. Always ask; no other approval (plan, spec, "ok") counts as choosing. If the tasks don't fit, do it inline.
+Before implementing, with or without a plan, check whether the work has several separable items (e.g. 3+ fixes), independent steps, or steps of clearly different difficulty. If so, read `orchestration.md` (next to this file) and follow it. Otherwise do it inline.
 
 ### Red, green, refactor, per scenario
 
