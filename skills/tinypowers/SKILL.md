@@ -12,14 +12,14 @@ DDD to name things, BDD to specify them, the smallest change to satisfy them, ev
 - State assumptions. If the request is unclear or has several readings, name them and ask. Never pick silently.
 - If a simpler approach exists, say so and push back.
 - Read the code the task touches. List everything the change must reach (callers, tests, fixtures, config, exports) and what it could break (data destroyed or exposed, callers that stop working). That is scope; extra features are not. Name skipped extras in one line.
-- Before the first write, branch from main with a name that fits the work (e.g. `feat/<feature>`, `fix/<bug>`). Read-only work needs no branch.
+- Before the first write, if on the default branch, create one with a name that fits the work (e.g. `feat/<feature>`, `fix/<bug>`); otherwise stay on the current branch or worktree. Never switch branches with uncommitted changes. Read-only work needs no branch.
 
 ## 2. Model the domain (DDD)
 
 Before code, write down in a few lines:
 
 - **Bounded context** and its **ubiquitous language**: the terms the domain experts use. Reuse the codebase's existing terms; add new ones only when needed.
-- **Aggregate** and its **invariants**: what must always be true.
+- **Aggregate** (if any) and its **invariants**: what must always be true. For infrastructure (adapters, handlers), name responsibilities and failure modes instead.
 - Names in code, tests and messages use these terms. Reject generic names (`handle`, `process`, `manager`, `utils`).
 - Domain logic is pure over plain data. I/O (DB, network, clock, randomness) sits behind a port at the edge, injected.
 
@@ -46,11 +46,13 @@ For multi-step work, write a short plan to `docs/plans/<feature>.md`: each step 
 
 ### Orchestration
 
-Before the first edit, with or without a plan: if the work has 2+ plan steps, or several separable items (e.g. 3+ fixes), independent steps, or steps of clearly different difficulty, you must read `orchestration.md` (next to this file) and ask with AskUserQuestion as it says. "Execute the plan" is not a choice. Otherwise do it inline.
+Before the first edit, with or without a plan: if the work has 2+ plan steps, or several separable items (e.g. 3+ fixes), independent steps, or steps of clearly different difficulty, you must read `orchestration.md` (next to this file) and ask with AskUserQuestion as it says. "Execute the plan" is not a choice. Otherwise do it inline. Without an ask tool, ask in plain text; without subagents, work inline.
+
+If implementation shows an assumption was wrong, stop: update the spec and `.feature`, say what changed, and get the user's nod if behaviour changes.
 
 ### Red, green, refactor, per scenario
 
-- Turn a scenario into a failing test. Run it; see it fail for the right reason.
+- Cover the scenario with failing test(s) in the repo's existing test framework; one scenario may need several tests, or several may share one parameterized test. Run them; see them fail for the right reason.
 - Write the least code that passes. Run it.
 - Refactor only what this change made messy.
 - Bug fix: reproduce with a failing scenario first, grep every caller of the function, fix the root cause once in shared code.
