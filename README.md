@@ -62,7 +62,7 @@ The skill makes the agent agree on *what* to build before it writes any code. Fo
 2. **Model** (DDD): name the domain terms and the rules that must always hold. Saved to `docs/specs/<feature>.md`.
 3. **Specify** (BDD): write Given/When/Then scenarios, including edge and failure cases. You approve them. Saved to `docs/features/<feature>.feature`.
 4. **Plan**: for multi-step work, a short list of steps, each with a check. Saved to `docs/plans/<feature>.md`.
-5. **Red, green, refactor**: turn each scenario into a failing test, write the least code that passes it, then tidy up.
+5. **Red, green, refactor**: cover each scenario with failing test(s) in your existing framework, write the least code that passes, then tidy up.
 6. **Verify**: run the tests, read the output, report what passed and what didn't, and offers to run the evals if the repo has them.
 
 The result is a small diff in which every change traces back to a scenario you agreed to.
@@ -94,7 +94,7 @@ Scenario: Expired code is rejected
   And the customer sees "code expired"
 ```
 
-After you say yes, it writes one failing test per scenario, makes them pass, and runs the suite.
+After you say yes, it writes failing tests covering each scenario, makes them pass, and runs the suite.
 
 ### Example: fix a bug
 
