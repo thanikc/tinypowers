@@ -60,10 +60,10 @@ The skill makes the agent agree on *what* to build before it writes any code. Fo
 
 1. **Think**: state assumptions, ask if the request is unclear, list what the change touches.
 2. **Model** (DDD): name the domain terms and the rules that must always hold. Saved to `docs/specs/<feature>.md`.
-3. **Specify** (BDD): write Given/When/Then scenarios, including edge and failure cases. You approve them. Saved to `docs/features/<feature>.feature`.
+3. **Specify** (BDD): write Given/When/Then scenarios, including edge and failure cases. You approve the non-obvious ones. Saved to `docs/features/<feature>.feature`.
 4. **Plan**: for multi-step work, a short list of steps, each with a check. Saved to `docs/plans/<feature>.md`.
 5. **Red, green, refactor**: cover each scenario with failing test(s) in your existing framework, write the least code that passes, then tidy up.
-6. **Verify**: run the tests, read the output, report what passed and what didn't, and offers to run the evals if the repo has them.
+6. **Verify**: run the tests, read the output, report what passed and what didn't, and offer to run the evals if the repo has them.
 
 The result is a small diff in which every change traces back to a scenario you agreed to.
 
@@ -102,6 +102,10 @@ After you say yes, it writes failing tests covering each scenario, makes them pa
 
 The agent writes a scenario that reproduces the bug, watches it fail, finds every caller of the total calculation, and fixes it once in the shared code.
 
+## Band
+
+With the plugin installed, a row above the prompt shows the on/off switch, the spend, the last turn's cost, tokens, turns and time for the current task (`/clear` starts a new one), and buttons for the common tasks: Build, Fix, Review, Audit and Verify. Each button sends the same request you would type after `/tinypowers`.
+
 ## Switch off
 
 Click the on/off switch in the band: it turns off only the skill (the band stays) and is remembered for the current project. By hand, write `off` to `<project>/.claude/.tinypowers-active`; remove the file or write anything else to turn it back on.
@@ -111,4 +115,5 @@ Click the on/off switch in the band: it turns off only the skill (the band stays
 ```sh
 node --test            # on/off hook and band helpers (Node 22.18+, for the .ts import)
 claude plugin test .   # band UI
+claude plugin eval .   # evals/: runs the skill against prompts and grades the replies (costs tokens)
 ```

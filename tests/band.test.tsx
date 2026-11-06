@@ -29,6 +29,8 @@ const mountBand = async ($: any, on: any) => {
   on('session.turns', () => ({ value: session.turns }))
   on('session.usage', () => ({ value: { startedAt: 0, cost: { usd: session.cost } } }))
   on('turn.complete', () => ({ text: '' }))
+  on('session.end', () => ({ sessionId: 's' }))
+  on('prompt.submit', (_$: any, e: any) => ({ text: e.text }))
   // What Claude Code draws without the band.
   on('ui.render', ($: any, e: any) => {
     const { Text } = $.ui.resolve(e)
@@ -91,5 +93,37 @@ test('the switch turns the skill off and the band shows it', async ($, on) => {
   await ui.press({ key: 'on' })
   expect(files['/home/u/.claude/.tinypowers-active']).toBe('off')
   expect((await ui.find({ key: 'on' }))?.text).toContain('off')
+  await ui.unmount()
+})
+
+const text = async (ui: { find: Function }) => (await ui.find({ type: 'Box' }))?.text ?? ''
+
+test('the clock ticks on screen while a step is still running', async ($, on) => {
+  const ui = await mountBand($, on)
+  await run($, use(1))
+  await clock.advance(3_000)
+  expect(await text(ui)).toContain('3s')
+  await ui.unmount()
+})
+
+test('/clear starts the spend over from the current session cost', async ($, on) => {
+  const ui = await mountBand($, on)
+  session = { cost: 0.5, turns: 1 }
+  await run($, use(1))
+  await $.turn.complete({ answer: '', durationMs: 1, usage: use(0) } as never)
+  expect(await text(ui)).toContain('$0.50')
+  await $.session.end({ reason: 'clear', sessionId: 's' } as never)
+  await run($, use(1))
+  expect(await text(ui)).toContain('$0.00')
+  await ui.unmount()
+})
+
+test('a new prompt stops a clock left running by an interrupted turn', async ($, on) => {
+  const ui = await mountBand($, on)
+  await run($, use(1))
+  await clock.advance(4_000)
+  await $.prompt.submit({ text: 'next' } as never)
+  await clock.advance(10_000)
+  expect(await text(ui)).toMatch(/turns?4sBuild/)
   await ui.unmount()
 })

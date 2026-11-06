@@ -2,9 +2,9 @@ import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
 import type { Band } from '../../types'
-import { NO_TOKENS, addTokens, elapsed, fmtTokens, totalTokens } from './metrics'
+import { NO_TOKENS, addTokens, delta, elapsed, fmtTokens, totalTokens } from './metrics'
 
-const EMPTY: Band = { cost: 0, spent: 0, turns: 0, tokens: NO_TOKENS, busyMs: 0, open: [], on: true }
+const EMPTY: Band = { cost: 0, base: 0, spent: 0, turns: 0, tokens: NO_TOKENS, busyMs: 0, open: [], on: true }
 const TASK = { spent: 0, turns: 0, last: undefined, tokens: NO_TOKENS, busyMs: 0, open: [], since: undefined }
 const band = atom({ plugin: 'tinypowers', key: 'band' } as const, EMPTY)
 const load = async ($: EngineInterface): Promise<Band> => ({ ...EMPTY, ...(await read($, band)) })
@@ -15,6 +15,12 @@ const home = async ($: EngineInterface) => (await $.env.get('HOME')) ?? (await $
 // shortcut: before session.start has run there is no project yet, so it falls back to the home folder.
 const flagFile = async ($: EngineInterface) => `${(await load($)).cwd ?? (await home($))}/.claude/.tinypowers-active`
 const isOn = async ($: EngineInterface) => (await $.fs.read(await flagFile($)).catch(() => 'on')).trim() !== 'off'
+
+// Stops the clock for one agent; the last one to finish banks the time.
+const stop = (b: Band, who: string, now: number) => {
+  const open = b.open.filter(a => a !== who)
+  return open.length || b.since === undefined ? { open } : { open, busyMs: b.busyMs + now - b.since, since: undefined }
+}
 
 // Same command a person types, so the skill stays the only logic.
 const run = ($: EngineInterface, args: string) => $.command.run({ command: 'tinypowers:tinypowers', args })
@@ -29,6 +35,9 @@ const TASKS = [
 ] as const
 
 export const register: Register = (on, _options) => {
+  // Redraws the band each second while the clock runs; ends itself when it stops.
+  let tick: { cancel: () => void } | undefined
+
   on('session.start', async ($, e, next) => {
     await update($, band, b => ({ ...EMPTY, ...b, cwd: e.cwd }))
     return next(e)
@@ -36,7 +45,7 @@ export const register: Register = (on, _options) => {
 
   // /clear starts a new task: counters start over, the cost baseline stays.
   on('session.end', async ($, e, next) => {
-    if (e.reason === 'clear') await update($, band, b => ({ ...EMPTY, ...b, ...TASK }))
+    if (e.reason === 'clear') await update($, band, b => ({ ...EMPTY, ...b, ...TASK, base: b.cost }))
     return next(e)
   }).catch(($, e, next) => next(e))
 
@@ -47,6 +56,11 @@ export const register: Register = (on, _options) => {
     const who = e.agentId ?? 'main'
     const now = await $.clock.now()
     await update($, band, b => ({ ...EMPTY, ...b, open: b.open.includes(who) ? b.open : [...b.open, who], since: b.since ?? now }))
+    tick ??= $.clock.every(1000, async () => {
+      if ((await load($)).since !== undefined) return $.ui.invalidate('ui.render')
+      tick?.cancel()
+      tick = undefined
+    })
     const step = yield* next(e)
     const cost = (await $.session.usage()).cost?.usd
     const turns = await $.session.turns()
@@ -54,23 +68,26 @@ export const register: Register = (on, _options) => {
       ...EMPTY,
       ...b,
       tokens: step.usage ? addTokens(b.tokens, step.usage) : b.tokens,
-      spent: cost ?? b.spent,
+      spent: cost === undefined ? b.spent : delta(cost, b.base),
       turns,
     }))
     return step
   }).catch(async function* ($, e, next) { return yield* next(e) })
 
+  // A turn that never completed (interrupted) would keep the clock running: a new prompt closes it.
+  on('prompt.submit', async ($, e, next) => {
+    const now = await $.clock.now()
+    await update($, band, b => ({ ...EMPTY, ...b, ...stop({ ...EMPTY, ...b }, 'main', now) }))
+    return next(e)
+  }).catch(($, e, next) => next(e))
+
   on('turn.complete', async ($, e, next) => {
     const who = e.agentId ?? 'main'
     // The last agent to finish stops the clock.
     const now = await $.clock.now()
-    const stop = (b: Band) => {
-      const open = b.open.filter(a => a !== who)
-      return open.length || b.since === undefined ? { open } : { open, busyMs: b.busyMs + now - b.since, since: undefined }
-    }
     // A subagent's cost is already in the session cost the main turn reads; its tokens came in with its steps.
     if (e.agentId !== undefined) {
-      await update($, band, b => ({ ...EMPTY, ...b, ...stop({ ...EMPTY, ...b }) }))
+      await update($, band, b => ({ ...EMPTY, ...b, ...stop({ ...EMPTY, ...b }, who, now) }))
       return next(e)
     }
     const usage = await $.session.usage()
@@ -78,15 +95,14 @@ export const register: Register = (on, _options) => {
     await update($, band, x => {
       const b = { ...EMPTY, ...x }
       const cost = usage.cost?.usd ?? b.cost
-      // A cost below the baseline means the engine started its ledger over.
-      const turn = cost >= b.cost ? cost - b.cost : cost
+      const turn = delta(cost, b.cost)
       return {
         ...b,
         cost,
-        spent: cost,
+        spent: delta(cost, b.base),
         turns,
         last: turn,
-        ...stop(b),
+        ...stop(b, who, now),
       }
     })
     return next(e)

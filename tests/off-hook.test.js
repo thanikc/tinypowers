@@ -19,4 +19,7 @@ test('hook is silent without a flag and when on, speaks when off', t => {
   assert.equal(run(dir), '')
   fs.writeFileSync(path.join(dir, '.claude', '.tinypowers-active'), 'off')
   assert.match(run(dir), /TINYPOWERS OFF/)
+  // The band trims the flag, so the hook must too.
+  fs.writeFileSync(path.join(dir, '.claude', '.tinypowers-active'), ' off\r\n')
+  assert.match(run(dir), /TINYPOWERS OFF/)
 })

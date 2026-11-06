@@ -13,6 +13,9 @@ export const addTokens = (t: Tokens, u: Usage): Tokens => ({
   cacheWrite: t.cacheWrite + u.cache_creation_input_tokens,
 })
 
+// A reading below its baseline means the engine started its ledger over.
+export const delta = (now: number, from: number) => (now >= from ? now - from : now)
+
 export const totalTokens = (t: Tokens) => t.input + t.output + t.cacheRead + t.cacheWrite
 
 // From 999,950 the k label would round to 1000k, so M takes over there.
