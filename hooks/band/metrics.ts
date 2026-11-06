@@ -1,6 +1,6 @@
 // Pure helpers for the band: token sums and short labels.
 
-export type Tokens = { input: number; output: number; cacheRead: number; cacheWrite: number }
+import type { Tokens } from '../../types'
 
 export type Usage = { input_tokens: number; output_tokens: number; cache_read_input_tokens: number; cache_creation_input_tokens: number }
 
@@ -15,7 +15,8 @@ export const addTokens = (t: Tokens, u: Usage): Tokens => ({
 
 export const totalTokens = (t: Tokens) => t.input + t.output + t.cacheRead + t.cacheWrite
 
-export const fmtTokens = (n: number) => (n < 1000 ? `${n}` : n < 1e6 ? `${+(n / 1e3).toFixed(1)}k` : `${+(n / 1e6).toFixed(1)}M`)
+// From 999,950 the k label would round to 1000k, so M takes over there.
+export const fmtTokens = (n: number) => (n < 1000 ? `${n}` : n < 999_950 ? `${+(n / 1e3).toFixed(1)}k` : `${+(n / 1e6).toFixed(1)}M`)
 
 export const elapsed = (ms: number) => {
   const s = Math.round(ms / 1000)

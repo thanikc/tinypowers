@@ -105,3 +105,10 @@ The agent writes a scenario that reproduces the bug, watches it fail, finds ever
 ## Switch off
 
 Click the on/off switch in the band: it turns off only the skill (the band stays) and is remembered for the current project. By hand, write `off` to `<project>/.claude/.tinypowers-active`; remove the file or write anything else to turn it back on.
+
+## Test
+
+```sh
+node --test            # on/off hook and band helpers (Node 22.18+, for the .ts import)
+claude plugin test .   # band UI
+```

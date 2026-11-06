@@ -1,12 +1,11 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
+import type { Band } from '../../types'
 import { NO_TOKENS, addTokens, elapsed, fmtTokens, totalTokens } from './metrics'
-import type { Tokens } from './metrics'
 
-type Band = { cost: number; spent: number; turns: number; turnCosts: number[]; tokens: Tokens; busyMs: number; open: string[]; since?: number; on: boolean; cwd?: string }
-const EMPTY: Band = { cost: 0, spent: 0, turns: 0, turnCosts: [], tokens: NO_TOKENS, busyMs: 0, open: [], on: true }
-const TASK = { spent: 0, turns: 0, turnCosts: [], tokens: NO_TOKENS, busyMs: 0, open: [], since: undefined }
+const EMPTY: Band = { cost: 0, spent: 0, turns: 0, tokens: NO_TOKENS, busyMs: 0, open: [], on: true }
+const TASK = { spent: 0, turns: 0, last: undefined, tokens: NO_TOKENS, busyMs: 0, open: [], since: undefined }
 const band = atom({ plugin: 'tinypowers', key: 'band' } as const, EMPTY)
 const load = async ($: EngineInterface): Promise<Band> => ({ ...EMPTY, ...(await read($, band)) })
 
@@ -86,7 +85,7 @@ export const register: Register = (on, _options) => {
         cost,
         spent: cost,
         turns,
-        turnCosts: [...b.turnCosts, turn].slice(-20),
+        last: turn,
         ...stop(b),
       }
     })
@@ -100,9 +99,10 @@ export const register: Register = (on, _options) => {
     const b = await load($)
     const enabled = await isOn($)
     const now = await $.clock.now()
-    const last = b.turnCosts[b.turnCosts.length - 1]
+    const { last } = b
     const toggle = async () => {
       await $.fs.write(await flagFile($), enabled ? 'off' : 'on')
+      // The flag file is the truth; this state write is what redraws the band.
       await update($, band, x => ({ ...EMPTY, ...x, on: !enabled }))
     }
 
