@@ -1,6 +1,7 @@
 {
   "name": "tinypowers-marketplace",
   "owner": { "name": "tch" },
+  "description": "Minimal DDD + BDD development workflow skill.",
   "plugins": [
     {
       "name": "tinypowers",

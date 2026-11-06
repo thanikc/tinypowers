@@ -3,7 +3,7 @@ name: tinypowers
 description: Use when building a feature or fixing a bug and you want a disciplined, minimal workflow - domain modelling (DDD), Gherkin scenarios as tests (BDD), smallest complete change, verified before claiming done. Triggers on "build", "add feature", "implement", "fix", "execute the plan", "run the plan", or /tinypowers. Also use when continuing or planning work from an existing spec or plan (docs/specs/, docs/plans/), e.g. "continue with phase 3", "next step", "implement the spec".
 ---
 
-# Spec-first-dev
+# tinypowers
 
 DDD to name things, BDD to specify them, the smallest change to satisfy them, evidence to prove it. Stack-agnostic.
 

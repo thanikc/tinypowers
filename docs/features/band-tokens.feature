@@ -24,3 +24,23 @@ Feature: Band token total updates while a task runs
     Given the main agent's turn ran 3 minutes and a subagent is still running
     When the turn completes and the subagent keeps working for 7 more minutes
     Then the band shows 10m 0s, and stops only when the subagent's turn completes
+
+  Scenario: the clock ticks while a step is still running
+    Given a model step has started and not finished
+    When 3 seconds pass
+    Then the band shows 3s
+
+  Scenario: a new prompt stops a clock left running by an interrupted turn
+    Given a turn was interrupted after 4 seconds and never completed
+    When the user sends a new prompt and 10 more seconds pass without a step
+    Then the band still shows 4s
+
+  Scenario: /clear starts the spend over
+    Given the session has cost $0.50 so far
+    When the user runs /clear and a model step finishes
+    Then the band shows $0.00
+
+  Scenario: the switch turns the skill off
+    Given the band shows "on"
+    When the user presses the switch
+    Then the project's flag file says off and the band shows "off"
